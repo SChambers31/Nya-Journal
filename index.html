@@ -2,29 +2,83 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Journal Hub</title>
+<title>Nya Journal</title>
 <style>
   :root{
-    --bg:#faf8f4; --surface:#ffffff; --border:#e5e0d8; --border-soft:#efece5;
-    --text:#2c2a26; --text2:#6b6558; --text3:#a39d8e;
-    --accent:#7f6a4f; --accent-soft:#efe6d8; --accent-text:#5c4a33;
-    --green:#5c7a5c; --green-soft:#e7edcf;
-    --coral:#c1704f; --coral-soft:#f6e5db;
+    --bg:#F4F6F3; --surface:#FBFCFA; --border:#D7DED8; --border-soft:#E8ECE8;
+    --text:#333A42; --text2:#647067; --text3:#8B968E;
+    --accent:#5B6E60; --accent-soft:#E3EAE4; --accent-text:#435247;
+    --green:#5B6E60; --green-soft:#E3EAE4;
+    --coral:#B96F5B; --coral-soft:#F2E1DC;
+    --frame:#4A5D4E;
     --radius:14px; --radius-sm:9px;
     --serif: Georgia, 'Times New Roman', serif;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#1c1a17; --surface:#252220; --border:#3a352e; --border-soft:#2e2b26;
-      --text:#ece7dc; --text2:#a39d8e; --text3:#756f61;
-      --accent:#c7ab7f; --accent-soft:#3a3226; --accent-text:#e0c99a;
-      --green:#8fae8a; --coral:#d98d6a; --coral-soft:#3a2a20;
+      --bg:#202722; --surface:#28312B; --border:#3D4A41; --border-soft:#354039;
+      --text:#EDF2EE; --text2:#B9C5BC; --text3:#8E9B92;
+      --accent:#8FA193; --accent-soft:#35443A; --accent-text:#D9E3DC;
+      --green:#8FA193; --green-soft:#35443A;
+      --coral:#D08A74; --coral-soft:#49322C;
+      --frame:#A7B5AA;
     }
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--text);}
-  .wrap{max-width:760px;margin:0 auto;padding:0 0 3rem;}
+  html{min-height:100%;background:var(--bg);}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--text);
+    position:relative;
+    overflow-x:hidden;
+  }
+
+  /* Nya Journal background: soft linen canvas + restrained sage washes.
+     It sits behind every interactive element and never captures pointer events. */
+  .journal-bg{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:0;
+    overflow:hidden;
+  }
+  .journal-bg .wash{opacity:.13;}
+  .journal-bg .frame{
+    fill:none;
+    stroke:var(--frame);
+    stroke-width:.75;
+    vector-effect:non-scaling-stroke;
+    stroke-linecap:square;
+  }
+  .journal-bg .motif{
+    fill:none;
+    stroke:var(--frame);
+    stroke-width:1.1;
+    vector-effect:non-scaling-stroke;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .journal-bg .corner{
+    fill:none;
+    stroke:var(--frame);
+    stroke-width:.75;
+    vector-effect:non-scaling-stroke;
+    stroke-linecap:square;
+  }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:800px;
+    margin:0 auto;
+    padding:0 38px 3rem;
+  }
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
 
   .hero{padding:1.5rem 0 1rem;text-align:center;}
@@ -34,6 +88,972 @@
   .tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 1rem;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .tabs::-webkit-scrollbar{display:none;}
   .tab{flex:0 0 auto;padding:8px 14px;border-radius:999px;border:0.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;white-space:nowrap;transition:background .15s;}
+  .tab.active{background:var(--accent-soft);color:var(--accent-text);border-color:var(--accent-soft);font-weight:500;}
+  .tab i{margin-right:5px;font-size:14px;vertical-align:-2px;}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem;}
+  .card h2{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 4px;}
+  .card .sub{color:var(--text2);font-size:12.5px;margin:0 0 1rem;}
+  h3.section{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin:1.1rem 0 .5rem;font-weight:500;}
+  h3.section:first-child{margin-top:0;}
+
+  label.field-label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:5px;}
+  input[type=text], input[type=date], input[type=number], textarea, select{
+    width:100%;font-family:var(--sans);font-size:14px;color:var(--text);
+    background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);
+    padding:9px 10px;outline:none;
+  }
+  textarea{resize:vertical;min-height:64px;line-height:1.5;font-family:var(--serif);}
+  input:focus, textarea:focus, select:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
+  .field{margin-bottom:.85rem;}
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;min-width:0;}
+
+  button{font-family:var(--sans);font-size:13px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--surface);color:var(--text);padding:8px 14px;cursor:pointer;transition:background .12s;}
+  button:hover{background:var(--border-soft);}
+  button:active{transform:scale(.98);}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  button.primary:hover{opacity:.9;background:var(--accent);}
+  button.ghost{border-color:transparent;color:var(--text2);padding:4px 8px;}
+  button.small{padding:5px 10px;font-size:12px;}
+  .btn-row{display:flex;gap:8px;margin-top:.5rem;flex-wrap:wrap;}
+
+  .pill-select{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill-select button{border-radius:999px;padding:6px 13px;font-size:13px;}
+  .pill-select button.sel{background:var(--accent-soft);color:var(--accent-text);border-color:var(--accent-soft);font-weight:500;}
+
+  .list-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border-soft);}
+  .list-item:last-child{border-bottom:none;}
+  .list-item input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex:0 0 auto;}
+  .list-item .txt{flex:1;font-size:14px;line-height:1.4;}
+  .list-item .txt.done{text-decoration:line-through;color:var(--text3);}
+  .list-item .del{flex:0 0 auto;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;}
+  .list-item .del:hover{color:var(--coral);}
+
+  .empty{color:var(--text3);font-size:13px;text-align:center;padding:1.2rem 0;font-style:italic;font-family:var(--serif);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .metric{background:var(--bg);border-radius:var(--radius-sm);padding:.8rem;text-align:center;}
+  .metric .n{font-size:20px;font-weight:500;font-family:var(--serif);}
+  .metric .l{font-size:11.5px;color:var(--text2);margin-top:2px;}
+
+  .mood-row{display:flex;gap:8px;justify-content:space-between;}
+  .mood-btn{flex:1;text-align:center;padding:8px 4px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--bg);cursor:pointer;font-size:20px;}
+  .mood-btn.sel{background:var(--accent-soft);border-color:var(--accent);}
+
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:.5rem;}
+  .cal .d{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--bg);color:var(--text3);cursor:pointer;border:0.5px solid transparent;}
+  .cal .d.has{background:var(--accent-soft);color:var(--accent-text);font-weight:500;}
+  .cal .d.today{border-color:var(--accent);}
+  .cal .dow{font-size:10px;color:var(--text3);text-align:center;}
+
+  .pillar-card{background:var(--bg);border-radius:var(--radius-sm);padding:.9rem;margin-bottom:.7rem;position:relative;}
+  .pillar-card .del{position:absolute;top:8px;right:8px;color:var(--text3);cursor:pointer;font-size:15px;}
+  .pillar-card .del:hover{color:var(--coral);}
+  .pillar-title{font-weight:500;font-size:14.5px;margin-bottom:3px;padding-right:20px;}
+  .pillar-desc{font-size:13px;color:var(--text2);line-height:1.5;}
+  .pillar-images{display:grid;grid-template-columns:repeat(auto-fill, minmax(72px, 1fr));gap:6px;margin-top:.7rem;}
+  .pillar-img-wrap{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--border-soft);}
+  .pillar-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pillar-img-wrap .img-del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;line-height:1;}
+  .pillar-img-add{aspect-ratio:1;border-radius:8px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;font-size:20px;background:transparent;}
+  .pillar-img-add:hover{background:var(--border-soft);}
+  .pillar-img-add input{display:none;}
+  .img-count{font-size:11px;color:var(--text3);margin:5px 0 0;text-align:right;}
+
+  .badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;font-weight:500;}
+  .badge.mindful{background:var(--green-soft, #e7edcf);color:var(--green);}
+  .badge.impulse{background:var(--coral-soft);color:var(--coral);}
+
+  .spend-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border-soft);}
+  .spend-item:last-child{border-bottom:none;}
+  .spend-item .desc{flex:1;font-size:13.5px;}
+  .spend-item .amt{font-weight:500;font-size:13.5px;}
+
+  .trip-tabs{display:flex;gap:6px;margin-bottom:.9rem;}
+  .trip-tabs button{flex:1;font-size:12.5px;padding:7px;}
+  .trip-tabs button.sel{background:var(--accent-soft);color:var(--accent-text);border-color:var(--accent-soft);}
+
+  .challenge-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:.6rem;}
+  .cday{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--bg);border:0.5px solid var(--border);cursor:pointer;color:var(--text2);}
+  .cday.done{background:var(--green, #5c7a5c);color:#fff;border-color:var(--green,#5c7a5c);}
+
+  .letter-tabs{display:flex;gap:6px;margin-bottom:.9rem;}
+  .letter-tabs button{flex:1;font-size:12.5px;padding:7px;}
+  .letter-tabs button.sel{background:var(--accent-soft);color:var(--accent-text);border-color:var(--accent-soft);}
+  .letter-text{font-family:var(--serif);font-size:15px;line-height:1.8;min-height:220px;}
+
+  .ach-item{padding:10px 0;border-bottom:0.5px solid var(--border-soft);}
+  .ach-item:last-child{border-bottom:none;}
+  .ach-item .date{font-size:11.5px;color:var(--text3);}
+  .ach-item .t{font-size:14px;font-weight:500;margin:2px 0;}
+  .ach-item .d{font-size:13px;color:var(--text2);}
+
+  .save-note{font-size:11.5px;color:var(--text3);text-align:right;margin-top:4px;min-height:14px;}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:12.5px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;}
+  .toast.show{opacity:1;}
+
+  .auth-screen{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem 1.25rem;}
+  .auth-box{max-width:340px;width:100%;text-align:center;}
+  .auth-box h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 6px;}
+  .auth-box p{color:var(--text2);font-size:13.5px;margin:0 0 1.4rem;line-height:1.5;}
+  .auth-box input{margin-bottom:.7rem;text-align:center;}
+  .auth-msg{font-size:12.5px;color:var(--green);margin-top:.8rem;min-height:16px;}
+  .auth-msg.err{color:var(--coral);}
+  .signout-row{text-align:center;padding:1rem 0 0;}
+  .signout-row button{font-size:12px;color:var(--text3);}
+
+  @media (max-width:560px){
+    .wrap{padding-left:26px;padding-right:26px;}
+    .hero{padding-top:1.75rem;}
+    .journal-bg .frame{stroke-width:.7;}
+    .journal-bg .motif{stroke-width:1;}
+  }
+</style>
+</head>
+<body>
+
+<svg class="journal-bg" viewBox="0 0 1000 1400" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <filter id="sageWash" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="3" seed="17" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="55" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <linearGradient id="washTL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B6E60" stop-opacity=".95"/>
+      <stop offset=".55" stop-color="#8FA193" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#8FA193" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="washBR" x1="1" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#5B6E60" stop-opacity=".95"/>
+      <stop offset=".55" stop-color="#8FA193" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#8FA193" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Watercolour washes deliberately stay near the canvas edges. -->
+  <path class="wash" filter="url(#sageWash)" fill="url(#washTL)"
+        d="M0 0H360C300 45 300 90 235 115C175 138 168 190 105 214C64 230 28 250 0 295Z"/>
+  <path class="wash" filter="url(#sageWash)" fill="url(#washBR)"
+        d="M1000 1400H640C700 1350 700 1300 765 1275C825 1252 832 1200 895 1176C936 1160 972 1140 1000 1095Z"/>
+
+  <!-- Elegant open frame. The content-safe inset keeps cards/forms away from the line. -->
+  <path class="frame" d="M74 66H932V1334"/>
+  <path class="corner" d="M74 1334V1298 M74 1334H110 M932 1334H896"/>
+
+  <!-- Nyansapo-inspired wisdom knot, integrated into the top-left frame corner. -->
+  <g class="motif" transform="translate(74 66)">
+    <path d="M0 0
+             C-22 -22 -54 -18 -64 4
+             C-73 24 -61 45 -39 48
+             C-20 51 -8 40 0 29
+             C8 40 20 51 39 48
+             C61 45 73 24 64 4
+             C54 -18 22 -22 0 0Z"/>
+    <path d="M-45 2L-2 45 M-2 -45L45 -2
+             M-45 -2L-2 -45 M-2 45L45 2"/>
+  </g>
+</svg>
+
+<div id="auth-screen" class="auth-screen" style="display:none;">
+  <div class="auth-box">
+    <h1>Nya Journal</h1>
+    <p>Enter your email and we'll send you a magic link to sign in — no password needed.</p>
+    <input type="text" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    <button class="primary" id="auth-send" style="width:100%;">Send magic link</button>
+    <p class="auth-msg" id="auth-msg"></p>
+  </div>
+</div>
+
+<div id="app-root" style="display:none;">
+  <div class="wrap">
+    <h2 class="sr-only">Personal journal hub with daily rituals, monthly planner, vision board, finances, adventures, self care, letters to future self, and career tracking, synced to your account</h2>
+
+    <div class="hero">
+      <h1>Nya Journal</h1>
+      <p id="dateLine"></p>
+    </div>
+
+    <div class="tabs" id="tabs" role="tablist"></div>
+
+    <div id="panels"></div>
+
+    <div class="signout-row"><button id="signout-btn">Sign out</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://zvincvyrshqoietujcbk.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2aW5jdnlyc2hxb2lldHVqY2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NzA4MDEsImV4cCI6MjEwMjA0NjgwMX0.X7f5IYPPev7R3JLkEpPebkPpThDhRtbmmYXgvo7jarg';
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+</script>
+
+<script>
+const TABS = [
+  {id:'daily', label:'Daily rituals', icon:'ti-sun'},
+  {id:'monthly', label:'Monthly', icon:'ti-calendar'},
+  {id:'vision', label:'Vision board', icon:'ti-compass'},
+  {id:'finance', label:'Finances', icon:'ti-coin'},
+  {id:'adventure', label:'Adventure', icon:'ti-map'},
+  {id:'selfcare', label:'Self care', icon:'ti-heart'},
+  {id:'letters', label:'Letters', icon:'ti-mail'},
+  {id:'career', label:'Career', icon:'ti-briefcase'},
+];
+
+const tabsEl = document.getElementById('tabs');
+const panelsEl = document.getElementById('panels');
+TABS.forEach(t=>{
+  const b = document.createElement('button');
+  b.className='tab'; b.id='tabbtn-'+t.id; b.setAttribute('role','tab');
+  b.innerHTML = `<i class="ti ${t.icon}" aria-hidden="true"></i>${t.label}`;
+  b.onclick = ()=>showTab(t.id);
+  tabsEl.appendChild(b);
+  const p = document.createElement('div');
+  p.className='panel'; p.id='panel-'+t.id;
+  panelsEl.appendChild(p);
+});
+
+function showTab(id){
+  TABS.forEach(t=>{
+    document.getElementById('tabbtn-'+t.id).classList.toggle('active', t.id===id);
+    document.getElementById('panel-'+t.id).classList.toggle('active', t.id===id);
+  });
+  localStorage_lastTab = id;
+}
+
+const todayKey = ()=> new Date().toISOString().slice(0,10);
+const monthKey = ()=> new Date().toISOString().slice(0,7);
+document.getElementById('dateLine').textContent = new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg||'Saved';
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+
+async function sset(key, value){
+  try{
+    const { error } = await supa.from('journal_entries').upsert({
+      user_id: currentUser.id,
+      entry_key: key,
+      entry_value: value,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,entry_key' });
+    if(error) throw error;
+    toast();
+    return true;
+  }catch(e){ console.error(e); toast('Save failed'); return false; }
+}
+async function sget(key, fallback){
+  try{
+    const { data, error } = await supa.from('journal_entries')
+      .select('entry_value')
+      .eq('user_id', currentUser.id)
+      .eq('entry_key', key)
+      .maybeSingle();
+    if(error) throw error;
+    return data ? data.entry_value : fallback;
+  }catch(e){ console.error(e); return fallback; }
+}
+async function slist(prefix){
+  try{
+    const { data, error } = await supa.from('journal_entries')
+      .select('entry_key')
+      .eq('user_id', currentUser.id)
+      .like('entry_key', prefix + '%');
+    if(error) throw error;
+    return data ? data.map(r=>r.entry_key) : [];
+  }catch(e){ return []; }
+}
+async function sdel(key){
+  try{
+    await supa.from('journal_entries').delete()
+      .eq('user_id', currentUser.id)
+      .eq('entry_key', key);
+  }catch(e){}
+}
+
+/* ---------------- AUTH ---------------- */
+async function sendMagicLink(){
+  const email = document.getElementById('auth-email').value.trim();
+  const msg = document.getElementById('auth-msg');
+  msg.classList.remove('err');
+  if(!email || !email.includes('@')){
+    msg.textContent = 'Enter a valid email address';
+    msg.classList.add('err');
+    return;
+  }
+  document.getElementById('auth-send').disabled = true;
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+  document.getElementById('auth-send').disabled = false;
+  if(error){
+    msg.textContent = error.message;
+    msg.classList.add('err');
+  } else {
+    msg.textContent = 'Check your email for a sign-in link.';
+  }
+}
+
+async function showApp(user){
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  await init();
+}
+
+function showAuthScreen(){
+  currentUser = null;
+  document.getElementById('app-root').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+document.getElementById('auth-send').onclick = sendMagicLink;
+document.getElementById('auth-email').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') sendMagicLink();
+});
+document.getElementById('signout-btn').onclick = async ()=>{
+  await supa.auth.signOut();
+  showAuthScreen();
+};
+
+// Defensive fix: some email/link-scanning services mangle the redirect URL by
+// appending a second "#" fragment, which breaks Supabase's automatic URL parser.
+// This manually recovers a valid access_token if one is present anywhere in the URL.
+async function recoverSessionFromMangledUrl(){
+  const href = window.location.href;
+  const tokenMatch = href.match(/access_token=([^&#]+)/);
+  const refreshMatch = href.match(/refresh_token=([^&#]+)/);
+  if(tokenMatch && refreshMatch){
+    const { data, error } = await supa.auth.setSession({
+      access_token: decodeURIComponent(tokenMatch[1]),
+      refresh_token: decodeURIComponent(refreshMatch[1])
+    });
+    if(!error && data.session){
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return true;
+    }
+  }
+  return false;
+}
+
+supa.auth.onAuthStateChange((event, session)=>{
+  if(session && session.user){
+    if(!currentUser || currentUser.id !== session.user.id){
+      showApp(session.user);
+    }
+  } else {
+    showAuthScreen();
+  }
+});
+
+(async ()=>{
+  const recovered = await recoverSessionFromMangledUrl();
+  if(recovered) return; // onAuthStateChange will fire and call showApp
+  const { data: { session } } = await supa.auth.getSession();
+  if(session && session.user){
+    showApp(session.user);
+  } else {
+    if(window.location.href.includes('error=')){
+      const msg = document.getElementById('auth-msg');
+      if(msg){
+        msg.textContent = 'That link expired or was already used — request a new one below.';
+        msg.classList.add('err');
+      }
+    }
+    showAuthScreen();
+  }
+})();
+
+let localStorage_lastTab = 'daily';
+
+/* ---------------- DAILY RITUALS ---------------- */
+async function renderDaily(){
+  const p = document.getElementById('panel-daily');
+  const key = 'daily:'+todayKey();
+  const data = await sget(key, {focus:'', priorities:['','',''], grateful:'', wentWell:'', improve:'', tomorrow:''});
+  p.innerHTML = `
+    <div class="card">
+      <h2>Morning focus</h2>
+      <p class="sub">Set the tone before the day sets it for you</p>
+      <div class="field">
+        <label class="field-label">Today I'm focused on</label>
+        <textarea id="d-focus" placeholder="One sentence to anchor the day...">${esc(data.focus)}</textarea>
+      </div>
+      <h3 class="section">Top 3 priorities</h3>
+      ${[0,1,2].map(i=>`<div class="field"><input type="text" id="d-pri-${i}" placeholder="Priority ${i+1}" value="${escAttr(data.priorities[i]||'')}"></div>`).join('')}
+    </div>
+    <div class="card">
+      <h2>Evening check-in</h2>
+      <p class="sub">Close the day with a little reflection</p>
+      <div class="field"><label class="field-label">What went well</label><textarea id="d-well" placeholder="...">${esc(data.wentWell)}</textarea></div>
+      <div class="field"><label class="field-label">What I'd do differently</label><textarea id="d-improve" placeholder="...">${esc(data.improve)}</textarea></div>
+      <div class="field"><label class="field-label">Grateful for</label><textarea id="d-grateful" placeholder="...">${esc(data.grateful)}</textarea></div>
+      <div class="field"><label class="field-label">One thing for tomorrow</label><input type="text" id="d-tomorrow" value="${escAttr(data.tomorrow)}"></div>
+    </div>
+    <div class="btn-row"><button class="primary" id="d-save">Save today's entry</button></div>
+  `;
+  document.getElementById('d-save').onclick = async ()=>{
+    const out = {
+      focus: document.getElementById('d-focus').value,
+      priorities: [0,1,2].map(i=>document.getElementById('d-pri-'+i).value),
+      wentWell: document.getElementById('d-well').value,
+      improve: document.getElementById('d-improve').value,
+      grateful: document.getElementById('d-grateful').value,
+      tomorrow: document.getElementById('d-tomorrow').value,
+    };
+    await sset(key, out);
+  };
+}
+
+/* ---------------- MONTHLY PLANNER ---------------- */
+const MOODS = ['😔','😕','😐','🙂','😄'];
+async function renderMonthly(){
+  const p = document.getElementById('panel-monthly');
+  const mk = monthKey();
+  const goals = await sget('goals:'+mk, []);
+  const moodMap = await sget('mood:'+mk, {});
+  const journalToday = await sget('journal:'+todayKey(), '');
+
+  const [y,m] = mk.split('-').map(Number);
+  const firstDow = new Date(y, m-1, 1).getDay();
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const monthName = new Date(y, m-1, 1).toLocaleDateString(undefined,{month:'long', year:'numeric'});
+
+  let calDays = '';
+  for(let i=0;i<firstDow;i++) calDays += `<div></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const dk = `${mk}-${String(d).padStart(2,'0')}`;
+    const has = moodMap[dk];
+    const isToday = dk === todayKey();
+    calDays += `<div class="d ${has?'has':''} ${isToday?'today':''}" data-day="${dk}" title="${has?MOODS[has-1]:''}">${has?MOODS[has-1]:d}</div>`;
+  }
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Mood — today</h2>
+      <p class="sub">${new Date().toLocaleDateString(undefined,{weekday:'long'})}</p>
+      <div class="mood-row" id="mood-row">
+        ${MOODS.map((em,i)=>`<div class="mood-btn ${moodMap[todayKey()]===i+1?'sel':''}" data-v="${i+1}">${em}</div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h2>${monthName}</h2>
+      <p class="sub">Your mood, day by day</p>
+      <div class="cal">
+        <div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>
+        ${calDays}
+      </div>
+    </div>
+    <div class="card">
+      <h2>Journal — today</h2>
+      <textarea id="m-journal" style="min-height:110px;" placeholder="What's on your mind today...">${esc(journalToday)}</textarea>
+      <div class="btn-row"><button class="primary small" id="m-journal-save">Save entry</button></div>
+    </div>
+    <div class="card">
+      <h2>Goals for ${monthName}</h2>
+      <p class="sub">What would make this month meaningful</p>
+      <div id="goal-list">
+        ${goals.length ? goals.map((g,i)=>`
+          <div class="list-item">
+            <input type="checkbox" data-i="${i}" class="goal-check" ${g.done?'checked':''}>
+            <span class="txt ${g.done?'done':''}">${esc(g.text)}</span>
+            <span class="del" data-i="${i}" title="Remove">&times;</span>
+          </div>`).join('') : '<div class="empty">No goals yet — add your first below</div>'}
+      </div>
+      <div class="row" style="margin-top:.7rem;">
+        <input type="text" id="goal-input" placeholder="Add a goal...">
+        <button id="goal-add" style="flex:0 0 auto;">Add</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.mood-btn').forEach(b=>{
+    b.onclick = async ()=>{
+      moodMap[todayKey()] = Number(b.dataset.v);
+      await sset('mood:'+mk, moodMap);
+      renderMonthly();
+    };
+  });
+  document.getElementById('m-journal-save').onclick = async ()=>{
+    await sset('journal:'+todayKey(), document.getElementById('m-journal').value);
+  };
+  document.getElementById('goal-add').onclick = async ()=>{
+    const inp = document.getElementById('goal-input');
+    if(!inp.value.trim()) return;
+    goals.push({text:inp.value.trim(), done:false});
+    await sset('goals:'+mk, goals);
+    renderMonthly();
+  };
+  document.querySelectorAll('.goal-check').forEach(c=>{
+    c.onchange = async ()=>{
+      goals[Number(c.dataset.i)].done = c.checked;
+      await sset('goals:'+mk, goals);
+      renderMonthly();
+    };
+  });
+  document.querySelectorAll('#goal-list .del').forEach(x=>{
+    x.onclick = async ()=>{
+      goals.splice(Number(x.dataset.i),1);
+      await sset('goals:'+mk, goals);
+      renderMonthly();
+    };
+  });
+}
+
+/* ---------------- VISION BOARD ---------------- */
+const MAX_PILLAR_IMAGES = 6;
+function resizeImageFile(file, maxDim){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function renderVision(){
+  const p = document.getElementById('panel-vision');
+  const pillars = await sget('vision:pillars', []);
+  p.innerHTML = `
+    <div class="card">
+      <h2>Vision board</h2>
+      <p class="sub">The pillars of the life you're building — keep them front of mind</p>
+      <div id="pillar-list">
+        ${pillars.length ? pillars.map((pl,i)=>`
+          <div class="pillar-card">
+            <span class="del" data-i="${i}" data-role="pillar-del">&times;</span>
+            <div class="pillar-title">${esc(pl.title)}</div>
+            <div class="pillar-desc">${esc(pl.desc)}</div>
+            <div class="pillar-images">
+              ${(pl.images||[]).map((src,ii)=>`
+                <div class="pillar-img-wrap">
+                  <img src="${src}" alt="">
+                  <div class="img-del" data-pi="${i}" data-ii="${ii}" data-role="img-del">&times;</div>
+                </div>`).join('')}
+              ${(pl.images||[]).length < MAX_PILLAR_IMAGES ? `
+              <label class="pillar-img-add" data-pi="${i}">
+                <i class="ti ti-plus" aria-hidden="true"></i>
+                <input type="file" accept="image/*" data-pi="${i}" class="img-input">
+              </label>` : ''}
+            </div>
+            <p class="img-count">${(pl.images||[]).length}/${MAX_PILLAR_IMAGES} images</p>
+          </div>`).join('') : '<div class="empty">No pillars yet — define your first one below</div>'}
+      </div>
+      <h3 class="section">Add a pillar</h3>
+      <div class="field"><input type="text" id="v-title" placeholder="e.g. Health, Craft, Connection"></div>
+      <div class="field"><textarea id="v-desc" placeholder="What this means to you, and how you'll know you're living it"></textarea></div>
+      <div class="btn-row"><button class="primary" id="v-add">Add pillar</button></div>
+    </div>
+  `;
+  document.getElementById('v-add').onclick = async ()=>{
+    const t = document.getElementById('v-title').value.trim();
+    const d = document.getElementById('v-desc').value.trim();
+    if(!t) return;
+    pillars.push({title:t, desc:d, images:[]});
+    await sset('vision:pillars', pillars);
+    renderVision();
+  };
+  document.querySelectorAll('[data-role="pillar-del"]').forEach(x=>{
+    x.onclick = async ()=>{
+      pillars.splice(Number(x.dataset.i),1);
+      await sset('vision:pillars', pillars);
+      renderVision();
+    };
+  });
+  document.querySelectorAll('[data-role="img-del"]').forEach(x=>{
+    x.onclick = async ()=>{
+      const pi = Number(x.dataset.pi), ii = Number(x.dataset.ii);
+      pillars[pi].images.splice(ii,1);
+      await sset('vision:pillars', pillars);
+      renderVision();
+    };
+  });
+  document.querySelectorAll('.img-input').forEach(inp=>{
+    inp.onchange = async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const pi = Number(inp.dataset.pi);
+      if(!pillars[pi].images) pillars[pi].images = [];
+      if(pillars[pi].images.length >= MAX_PILLAR_IMAGES){
+        toast(`Limit is ${MAX_PILLAR_IMAGES} images per pillar`);
+        return;
+      }
+      try{
+        const dataUrl = await resizeImageFile(file, 640);
+        pillars[pi].images.push(dataUrl);
+        await sset('vision:pillars', pillars);
+        renderVision();
+      }catch(err){
+        toast('Could not add image');
+      }
+    };
+  });
+}
+
+/* ---------------- MINDFUL FINANCES ---------------- */
+async function renderFinance(){
+  const p = document.getElementById('panel-finance');
+  const mk = monthKey();
+  const spends = await sget('spend:'+mk, []);
+  const budget = await sget('budget:'+mk, null);
+
+  const total = spends.reduce((s,x)=>s+Number(x.amt||0),0);
+  const mindful = spends.filter(x=>x.type==='mindful').reduce((s,x)=>s+Number(x.amt||0),0);
+  const impulse = spends.filter(x=>x.type==='impulse').reduce((s,x)=>s+Number(x.amt||0),0);
+  const remaining = budget ? (Number(budget)-total) : null;
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Mindful finances</h2>
+      <p class="sub">Budget with intention — know where every pound goes</p>
+      <div class="row">
+        <div class="field"><label class="field-label">Monthly budget (£)</label><input type="number" id="f-budget" value="${budget!=null?budget:''}" placeholder="e.g. 1500"></div>
+        <div style="display:flex;align-items:flex-end;"><button id="f-budget-save" style="height:36px;">Set</button></div>
+      </div>
+      <div class="grid3" style="margin-top:.5rem;">
+        <div class="metric"><div class="n">£${total.toFixed(0)}</div><div class="l">Spent</div></div>
+        <div class="metric"><div class="n">£${mindful.toFixed(0)}</div><div class="l">Mindful</div></div>
+        <div class="metric"><div class="n">£${impulse.toFixed(0)}</div><div class="l">Impulse</div></div>
+      </div>
+      ${remaining!==null ? `<p class="sub" style="margin-top:.6rem;">£${remaining.toFixed(0)} remaining this month</p>` : ''}
+    </div>
+    <div class="card">
+      <h3 class="section">Log a spend</h3>
+      <div class="row">
+        <input type="text" id="f-desc" placeholder="What was it?">
+        <input type="number" id="f-amt" placeholder="£" style="max-width:90px;">
+      </div>
+      <div class="field" style="margin-top:.6rem;">
+        <div class="pill-select" id="f-type">
+          <button data-t="mindful" class="sel">Mindful</button>
+          <button data-t="impulse">Impulse</button>
+        </div>
+      </div>
+      <div class="btn-row"><button class="primary" id="f-add">Add spend</button></div>
+      <h3 class="section">This month</h3>
+      <div id="spend-list">
+        ${spends.length ? spends.slice().reverse().map((s,ri)=>{
+          const i = spends.length-1-ri;
+          return `<div class="spend-item">
+            <span class="badge ${s.type}">${s.type}</span>
+            <span class="desc">${esc(s.desc)}</span>
+            <span class="amt">£${Number(s.amt).toFixed(2)}</span>
+            <span class="del" data-i="${i}">&times;</span>
+          </div>`;
+        }).join('') : '<div class="empty">No spends logged yet</div>'}
+      </div>
+    </div>
+  `;
+  let selType = 'mindful';
+  document.querySelectorAll('#f-type button').forEach(b=>{
+    b.onclick = ()=>{
+      selType = b.dataset.t;
+      document.querySelectorAll('#f-type button').forEach(x=>x.classList.toggle('sel', x===b));
+    };
+  });
+  document.getElementById('f-budget-save').onclick = async ()=>{
+    await sset('budget:'+mk, document.getElementById('f-budget').value);
+    renderFinance();
+  };
+  document.getElementById('f-add').onclick = async ()=>{
+    const desc = document.getElementById('f-desc').value.trim();
+    const amt = document.getElementById('f-amt').value;
+    if(!desc || !amt) return;
+    spends.push({desc, amt, type:selType, date:todayKey()});
+    await sset('spend:'+mk, spends);
+    renderFinance();
+  };
+  document.querySelectorAll('#spend-list .del').forEach(x=>{
+    x.onclick = async ()=>{
+      spends.splice(Number(x.dataset.i),1);
+      await sset('spend:'+mk, spends);
+      renderFinance();
+    };
+  });
+}
+
+/* ---------------- ADVENTURE PLANNER ---------------- */
+let adventureSub = 'wishlist';
+async function renderAdventure(){
+  const p = document.getElementById('panel-adventure');
+  const wishlist = await sget('adv:wishlist', []);
+  const itinerary = await sget('adv:itinerary', []);
+  const packing = await sget('adv:packing', []);
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Adventure planner</h2>
+      <p class="sub">Wishlist → itinerary → packing, all in one place</p>
+      <div class="trip-tabs">
+        <button data-s="wishlist" class="${adventureSub==='wishlist'?'sel':''}">Wishlist</button>
+        <button data-s="itinerary" class="${adventureSub==='itinerary'?'sel':''}">Itinerary</button>
+        <button data-s="packing" class="${adventureSub==='packing'?'sel':''}">Packing list</button>
+      </div>
+      <div id="adv-body"></div>
+    </div>
+  `;
+  document.querySelectorAll('.trip-tabs button').forEach(b=>{
+    b.onclick = ()=>{ adventureSub = b.dataset.s; renderAdventure(); };
+  });
+
+  const body = document.getElementById('adv-body');
+  if(adventureSub==='wishlist'){
+    body.innerHTML = `
+      <div id="w-list">
+        ${wishlist.length ? wishlist.map((w,i)=>`
+          <div class="list-item">
+            <span class="txt"><strong style="font-weight:500;">${esc(w.place)}</strong>${w.note?' — '+esc(w.note):''}</span>
+            <span class="del" data-i="${i}">&times;</span>
+          </div>`).join('') : '<div class="empty">Nowhere on the list yet</div>'}
+      </div>
+      <div class="row" style="margin-top:.6rem;">
+        <input type="text" id="w-place" placeholder="Where to?">
+        <input type="text" id="w-note" placeholder="Why / notes">
+      </div>
+      <div class="btn-row"><button class="primary" id="w-add">Add to wishlist</button></div>
+    `;
+    document.getElementById('w-add').onclick = async ()=>{
+      const place = document.getElementById('w-place').value.trim();
+      if(!place) return;
+      wishlist.push({place, note:document.getElementById('w-note').value.trim()});
+      await sset('adv:wishlist', wishlist);
+      renderAdventure();
+    };
+    document.querySelectorAll('#w-list .del').forEach(x=>{
+      x.onclick = async ()=>{ wishlist.splice(Number(x.dataset.i),1); await sset('adv:wishlist', wishlist); renderAdventure(); };
+    });
+  } else if(adventureSub==='itinerary'){
+    body.innerHTML = `
+      <div id="i-list">
+        ${itinerary.length ? itinerary.map((it,i)=>`
+          <div class="list-item">
+            <span class="txt"><strong style="font-weight:500;">${esc(it.day)}</strong> — ${esc(it.plan)}</span>
+            <span class="del" data-i="${i}">&times;</span>
+          </div>`).join('') : '<div class="empty">No itinerary items yet</div>'}
+      </div>
+      <div class="row" style="margin-top:.6rem;">
+        <input type="text" id="i-day" placeholder="Day / date" style="max-width:130px;">
+        <input type="text" id="i-plan" placeholder="Plan for this day">
+      </div>
+      <div class="btn-row"><button class="primary" id="i-add">Add stop</button></div>
+    `;
+    document.getElementById('i-add').onclick = async ()=>{
+      const day = document.getElementById('i-day').value.trim();
+      const plan = document.getElementById('i-plan').value.trim();
+      if(!day || !plan) return;
+      itinerary.push({day, plan});
+      await sset('adv:itinerary', itinerary);
+      renderAdventure();
+    };
+    document.querySelectorAll('#i-list .del').forEach(x=>{
+      x.onclick = async ()=>{ itinerary.splice(Number(x.dataset.i),1); await sset('adv:itinerary', itinerary); renderAdventure(); };
+    });
+  } else {
+    body.innerHTML = `
+      <div id="p-list">
+        ${packing.length ? packing.map((it,i)=>`
+          <div class="list-item">
+            <input type="checkbox" data-i="${i}" class="p-check" ${it.done?'checked':''}>
+            <span class="txt ${it.done?'done':''}">${esc(it.item)}</span>
+            <span class="del" data-i="${i}">&times;</span>
+          </div>`).join('') : '<div class="empty">Packing list is empty</div>'}
+      </div>
+      <div class="row" style="margin-top:.6rem;">
+        <input type="text" id="p-item" placeholder="Add an item...">
+        <button id="p-add" style="flex:0 0 auto;">Add</button>
+      </div>
+    `;
+    document.getElementById('p-add').onclick = async ()=>{
+      const item = document.getElementById('p-item').value.trim();
+      if(!item) return;
+      packing.push({item, done:false});
+      await sset('adv:packing', packing);
+      renderAdventure();
+    };
+    document.querySelectorAll('.p-check').forEach(c=>{
+      c.onchange = async ()=>{ packing[Number(c.dataset.i)].done = c.checked; await sset('adv:packing', packing); renderAdventure(); };
+    });
+    document.querySelectorAll('#p-list .del').forEach(x=>{
+      x.onclick = async ()=>{ packing.splice(Number(x.dataset.i),1); await sset('adv:packing', packing); renderAdventure(); };
+    });
+  }
+}
+
+/* ---------------- SELF CARE ---------------- */
+async function renderSelfcare(){
+  const p = document.getElementById('panel-selfcare');
+  const challenge = await sget('selfcare:challenge', {name:'', days:{}, active:false});
+  const dayCells = Array.from({length:30}, (_,i)=>i+1).map(d=>{
+    const done = !!challenge.days[d];
+    return `<div class="cday ${done?'done':''}" data-d="${d}">${d}</div>`;
+  }).join('');
+  const doneCount = Object.values(challenge.days||{}).filter(Boolean).length;
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Self care</h2>
+      <p class="sub">A 30-day challenge to build a nourishing daily practice</p>
+      <div class="field">
+        <label class="field-label">Challenge name</label>
+        <input type="text" id="sc-name" placeholder="e.g. 10 minutes of quiet each morning" value="${escAttr(challenge.name)}">
+      </div>
+      <div class="btn-row"><button class="primary small" id="sc-save-name">Save name</button></div>
+      <h3 class="section">Progress — ${doneCount}/30 days</h3>
+      <div class="challenge-grid">${dayCells}</div>
+    </div>
+  `;
+  document.getElementById('sc-save-name').onclick = async ()=>{
+    challenge.name = document.getElementById('sc-name').value;
+    await sset('selfcare:challenge', challenge);
+    toast();
+  };
+  document.querySelectorAll('.cday').forEach(c=>{
+    c.onclick = async ()=>{
+      const d = c.dataset.d;
+      challenge.days[d] = !challenge.days[d];
+      await sset('selfcare:challenge', challenge);
+      renderSelfcare();
+    };
+  });
+}
+
+/* ---------------- LETTERS ---------------- */
+let letterSub = 'to';
+async function renderLetters(){
+  const p = document.getElementById('panel-letters');
+  const toFuture = await sget('letter:to', '');
+  const fromFuture = await sget('letter:from', '');
+  const howFar = await sget('letter:howfar', '');
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Letters</h2>
+      <p class="sub">Words across time — to yourself, from yourself, and looking back</p>
+      <div class="letter-tabs">
+        <button data-s="to" class="${letterSub==='to'?'sel':''}">To future self</button>
+        <button data-s="from" class="${letterSub==='from'?'sel':''}">From future self</button>
+        <button data-s="howfar" class="${letterSub==='howfar'?'sel':''}">How far I've come</button>
+      </div>
+      <textarea class="letter-text" id="l-text" placeholder="${letterSub==='to' ? 'Dear future me...' : letterSub==='from' ? 'Imagine your future self writing back to you today...' : 'Reflect on how far you have come...'}"></textarea>
+      <div class="btn-row"><button class="primary" id="l-save">Save letter</button></div>
+    </div>
+  `;
+  const map = {to:toFuture, from:fromFuture, howfar:howFar};
+  document.getElementById('l-text').value = map[letterSub] || '';
+
+  document.querySelectorAll('.letter-tabs button').forEach(b=>{
+    b.onclick = ()=>{ letterSub = b.dataset.s; renderLetters(); };
+  });
+  document.getElementById('l-save').onclick = async ()=>{
+    const key = letterSub==='to' ? 'letter:to' : letterSub==='from' ? 'letter:from' : 'letter:howfar';
+    await sset(key, document.getElementById('l-text').value);
+  };
+}
+
+/* ---------------- CAREER ---------------- */
+async function renderCareer(){
+  const p = document.getElementById('panel-career');
+  const plan = await sget('career:plan', {role:'', vision:'', skills:'', nextSteps:''});
+  const achievements = await sget('career:achievements', []);
+
+  p.innerHTML = `
+    <div class="card">
+      <h2>Career planner</h2>
+      <p class="sub">Where you're headed and how you'll get there</p>
+      <div class="field"><label class="field-label">Current role / focus</label><input type="text" id="c-role" value="${escAttr(plan.role)}"></div>
+      <div class="field"><label class="field-label">Where I want to be</label><textarea id="c-vision">${esc(plan.vision)}</textarea></div>
+      <div class="field"><label class="field-label">Skills to build</label><textarea id="c-skills">${esc(plan.skills)}</textarea></div>
+      <div class="field"><label class="field-label">Next steps</label><textarea id="c-next">${esc(plan.nextSteps)}</textarea></div>
+      <div class="btn-row"><button class="primary" id="c-save">Save plan</button></div>
+    </div>
+    <div class="card">
+      <h2>Achievements</h2>
+      <p class="sub">Capture the wins, big and small</p>
+      <div id="ach-list">
+        ${achievements.length ? achievements.slice().reverse().map((a,ri)=>{
+          const i = achievements.length-1-ri;
+          return `<div class="ach-item">
+            <div class="date">${esc(a.date)} <span class="del" data-i="${i}" style="float:right;cursor:pointer;color:var(--text3);">&times;</span></div>
+            <div class="t">${esc(a.title)}</div>
+            ${a.desc?`<div class="d">${esc(a.desc)}</div>`:''}
+          </div>`;
+        }).join('') : '<div class="empty">No achievements captured yet</div>'}
+      </div>
+      <h3 class="section">Add an achievement</h3>
+      <div class="field"><input type="text" id="a-title" placeholder="What did you achieve?"></div>
+      <div class="field"><textarea id="a-desc" placeholder="Details (optional)"></textarea></div>
+      <div class="btn-row"><button class="primary" id="a-add">Add achievement</button></div>
+    </div>
+  `;
+  document.getElementById('c-save').onclick = async ()=>{
+    await sset('career:plan', {
+      role: document.getElementById('c-role').value,
+      vision: document.getElementById('c-vision').value,
+      skills: document.getElementById('c-skills').value,
+      nextSteps: document.getElementById('c-next').value,
+    });
+  };
+  document.getElementById('a-add').onclick = async ()=>{
+    const title = document.getElementById('a-title').value.trim();
+    if(!title) return;
+    achievements.push({title, desc:document.getElementById('a-desc').value.trim(), date: new Date().toLocaleDateString(undefined,{month:'short', day:'numeric', year:'numeric'})});
+    await sset('career:achievements', achievements);
+    renderCareer();
+  };
+  document.querySelectorAll('#ach-list .del').forEach(x=>{
+    x.onclick = async ()=>{
+      achievements.splice(Number(x.dataset.i),1);
+      await sset('career:achievements', achievements);
+      renderCareer();
+    };
+  });
+}
+
+function esc(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+async function init(){
+  showTab('daily');
+  await renderDaily();
+  await renderMonthly();
+  await renderVision();
+  await renderFinance();
+  await renderAdventure();
+  await renderSelfcare();
+  await renderLetters();
+  await renderCareer();
+}
+</script>
+</body>
+</html>
   .tab.active{background:var(--accent-soft);color:var(--accent-text);border-color:var(--accent-soft);font-weight:500;}
   .tab i{margin-right:5px;font-size:14px;vertical-align:-2px;}
 
