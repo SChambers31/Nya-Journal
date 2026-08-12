@@ -327,6 +327,26 @@ document.getElementById('signout-btn').onclick = async ()=>{
   showAuthScreen();
 };
 
+// Defensive fix: some email/link-scanning services mangle the redirect URL by
+// appending a second "#" fragment, which breaks Supabase's automatic URL parser.
+// This manually recovers a valid access_token if one is present anywhere in the URL.
+async function recoverSessionFromMangledUrl(){
+  const href = window.location.href;
+  const tokenMatch = href.match(/access_token=([^&#]+)/);
+  const refreshMatch = href.match(/refresh_token=([^&#]+)/);
+  if(tokenMatch && refreshMatch){
+    const { data, error } = await supa.auth.setSession({
+      access_token: decodeURIComponent(tokenMatch[1]),
+      refresh_token: decodeURIComponent(refreshMatch[1])
+    });
+    if(!error && data.session){
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return true;
+    }
+  }
+  return false;
+}
+
 supa.auth.onAuthStateChange((event, session)=>{
   if(session && session.user){
     if(!currentUser || currentUser.id !== session.user.id){
@@ -338,10 +358,19 @@ supa.auth.onAuthStateChange((event, session)=>{
 });
 
 (async ()=>{
+  const recovered = await recoverSessionFromMangledUrl();
+  if(recovered) return; // onAuthStateChange will fire and call showApp
   const { data: { session } } = await supa.auth.getSession();
   if(session && session.user){
     showApp(session.user);
   } else {
+    if(window.location.href.includes('error=')){
+      const msg = document.getElementById('auth-msg');
+      if(msg){
+        msg.textContent = 'That link expired or was already used — request a new one below.';
+        msg.classList.add('err');
+      }
+    }
     showAuthScreen();
   }
 })();
