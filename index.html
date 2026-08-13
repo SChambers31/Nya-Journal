@@ -38,11 +38,11 @@ html{background-color:#F4F6F3;}
   }
   body::before{
     top:0; left:0;
-    background:radial-gradient(ellipse at top left, rgba(143,161,147,0.18), rgba(143,161,147,0.07) 55%, transparent 75%);
+    background:radial-gradient(ellipse at top left, rgba(143,161,147,0.15), rgba(143,161,147,0.06) 55%, transparent 75%);
   }
   body::after{
     bottom:0; right:0;
-    background:radial-gradient(ellipse at bottom right, rgba(91,110,96,0.15), rgba(91,110,96,0.06) 55%, transparent 75%);
+    background:radial-gradient(ellipse at bottom right, rgba(91,110,96,0.14), rgba(91,110,96,0.05) 55%, transparent 75%);
   }
   .wrap{position:relative;}
   .corner-knot{
@@ -58,6 +58,14 @@ html{background-color:#F4F6F3;}
   .hero{padding:1.5rem 0 1rem;text-align:center;}
   .hero h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 4px;}
   .hero p{color:var(--text2);font-size:13px;margin:0;}
+  .tagline{font-family:var(--serif);font-style:italic;color:var(--text3);font-size:12.5px;margin:0 0 6px !important;}
+
+  .nyansa-blurb{max-width:520px;margin:0 auto 1.2rem;text-align:center;font-size:11.5px;line-height:1.6;color:var(--text3);padding:0 1rem;}
+
+  .app-footer{text-align:center;padding:1.4rem 0 0.5rem;margin-top:1rem;border-top:0.5px solid var(--border-soft);}
+  .app-footer p{font-size:10.5px;letter-spacing:.04em;color:var(--text3);margin:0 0 4px;}
+  .app-footer a{font-size:11.5px;color:var(--text3);text-decoration:underline;text-underline-offset:2px;}
+  .app-footer a:hover{color:var(--accent-text);}
 
   .tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 1rem;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .tabs::-webkit-scrollbar{display:none;}
@@ -195,13 +203,26 @@ html{background-color:#F4F6F3;}
   .auth-msg.err{color:var(--coral);}
   .signout-row{text-align:center;padding:1rem 0 0;}
   .signout-row button{font-size:12px;color:var(--text3);}
+
+  .about-screen{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:3rem 1.25rem;}
+  .about-box{max-width:520px;width:100%;background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:2.2rem 2rem;position:relative;text-align:center;}
+  .about-box h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 4px;}
+  .about-box .tagline{margin-bottom:1.6rem;}
+  .about-h2{font-family:var(--serif);font-weight:400;font-size:17px;margin:0 0 0.8rem;text-align:left;}
+  .about-box p{color:var(--text2);font-size:14px;line-height:1.7;text-align:left;margin:0 0 1rem;}
+  .about-closing{font-family:var(--serif);font-style:italic;text-align:center !important;color:var(--text);font-size:15px;margin:1.6rem 0 1.8rem !important;}
+  .about-footer{border-top:0.5px solid var(--border-soft);padding-top:1.2rem;text-align:left;}
+  .about-footer p{font-size:11px;color:var(--text3);line-height:1.6;margin:0 0 8px;text-align:left;}
+  .about-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;line-height:1;color:var(--text3);cursor:pointer;padding:4px;}
+  .about-close:hover{color:var(--text);}
 </style>
 </head>
 <body>
 
 <div id="auth-screen" class="auth-screen" style="display:none;">
   <div class="auth-box">
-    <h1>Nya Journal</h1>
+    <h1>Nyansa Journal</h1>
+    <p class="tagline">Wisdom through reflection!</p>
     <p>Enter your email and we'll send you a magic link to sign in — no password needed.</p>
     <input type="text" id="auth-email" placeholder="you@example.com" autocomplete="email">
     <button class="primary" id="auth-send" style="width:100%;">Send magic link</button>
@@ -215,15 +236,42 @@ html{background-color:#F4F6F3;}
     <h2 class="sr-only">Personal journal hub with daily rituals, monthly planner, vision board, finances, adventures, self care, letters to future self, and career tracking, synced to your account</h2>
 
     <div class="hero">
-      <h1>Nya Journal</h1>
+      <h1>Nyansa Journal</h1>
+      <p class="tagline">Wisdom through reflection!</p>
       <p id="dateLine"></p>
     </div>
+
+    <p class="nyansa-blurb">Nyansa is an Akan/Twi word associated with wisdom, understanding and the practical knowledge gained through experience.</p>
 
     <div class="tabs" id="tabs" role="tablist"></div>
 
     <div id="panels"></div>
 
     <div class="signout-row"><button id="signout-btn">Sign out</button></div>
+
+    <div class="app-footer">
+      <p>NYANSA · © 2026 S CHAMBERS</p>
+      <a href="#" id="about-link">About Nyansa</a>
+    </div>
+  </div>
+</div>
+
+<div id="about-screen" class="about-screen" style="display:none;">
+  <div class="about-box">
+    <button class="about-close" id="about-close" aria-label="Close">&times;</button>
+    <h1>Welcome to Nyansa</h1>
+    <p class="tagline">Wisdom through reflection.</p>
+
+    <h2 class="about-h2">Why Nyansa?</h2>
+    <p>Nyansa is an Akan/Twi word associated with wisdom, understanding and the practical knowledge gained through experience.</p>
+    <p>We chose the name because journaling gives us an opportunity to turn experience into insight. Every reflection is a chance to pause, notice, learn and grow.</p>
+
+    <p class="about-closing">Nyansa: a space to reflect, learn and grow.</p>
+
+    <div class="about-footer">
+      <p>© 2026 S Chambers. All rights reserved.</p>
+      <p>Nyansa and its original content, design and materials are the intellectual property of S Chambers. No part of this journal may be reproduced, distributed, resold or commercially exploited without prior written permission.</p>
+    </div>
   </div>
 </div>
 
@@ -370,6 +418,14 @@ document.getElementById('auth-email').addEventListener('keydown', (e)=>{
 document.getElementById('signout-btn').onclick = async ()=>{
   await supa.auth.signOut();
   showAuthScreen();
+};
+
+document.getElementById('about-link').onclick = (e)=>{
+  e.preventDefault();
+  document.getElementById('about-screen').style.display = 'flex';
+};
+document.getElementById('about-close').onclick = ()=>{
+  document.getElementById('about-screen').style.display = 'none';
 };
 
 // Defensive fix: some email/link-scanning services mangle the redirect URL by
