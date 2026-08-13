@@ -60,8 +60,6 @@ html{background-color:#F4F6F3;}
   .hero p{color:var(--text2);font-size:13px;margin:0;}
   .tagline{font-family:var(--serif);font-style:italic;color:var(--text3);font-size:12.5px;margin:0 0 6px !important;}
 
-  .nyansa-blurb{max-width:520px;margin:0 auto 1.2rem;text-align:center;font-size:11.5px;line-height:1.6;color:var(--text3);padding:0 1rem;}
-
   .app-footer{text-align:center;padding:1.4rem 0 0.5rem;margin-top:1rem;border-top:0.5px solid var(--border-soft);}
   .app-footer p{font-size:10.5px;letter-spacing:.04em;color:var(--text3);margin:0 0 4px;}
   .app-footer a{font-size:11.5px;color:var(--text3);text-decoration:underline;text-underline-offset:2px;}
@@ -240,8 +238,6 @@ html{background-color:#F4F6F3;}
       <p class="tagline">Wisdom through reflection!</p>
       <p id="dateLine"></p>
     </div>
-
-    <p class="nyansa-blurb">Nyansa is an Akan/Twi word associated with wisdom, understanding and the practical knowledge gained through experience.</p>
 
     <div class="tabs" id="tabs" role="tablist"></div>
 
@@ -482,13 +478,18 @@ let localStorage_lastTab = 'daily';
 let dailyViewDate = todayKey();
 
 function shiftDate(dateStr, days){
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0,10);
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate() + days);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth()+1).padStart(2,'0');
+  const dd = String(dt.getDate()).padStart(2,'0');
+  return `${yy}-${mm}-${dd}`;
 }
 function formatDateLabel(dateStr){
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric', year:'numeric'});
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  return dt.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric', year:'numeric'});
 }
 
 async function renderDaily(){
