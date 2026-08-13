@@ -59,6 +59,8 @@ html{background-color:#F4F6F3;}
   .hero h1{font-family:var(--serif);font-weight:400;font-size:26px;margin:0 0 4px;}
   .hero p{color:var(--text2);font-size:13px;margin:0;}
   .tagline{font-family:var(--serif);font-style:italic;color:var(--text3);font-size:12.5px;margin:0 0 6px !important;}
+  .edit-name-link{background:none;border:none;font-size:11px;color:var(--text3);text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:2px 4px;margin-top:2px;}
+  .edit-name-link:hover{color:var(--accent-text);}
 
   .app-footer{text-align:center;padding:1.4rem 0 0.5rem;margin-top:1rem;border-top:0.5px solid var(--border-soft);}
   .app-footer p{font-size:10.5px;letter-spacing:.04em;color:var(--text3);margin:0 0 4px;}
@@ -234,9 +236,10 @@ html{background-color:#F4F6F3;}
     <h2 class="sr-only">Personal journal hub with daily rituals, monthly planner, vision board, finances, adventures, self care, letters to future self, and career tracking, synced to your account</h2>
 
     <div class="hero">
-      <h1>Nyansa Journal</h1>
+      <h1 id="journalTitle">Nyansa Journal</h1>
       <p class="tagline">Wisdom through reflection!</p>
       <p id="dateLine"></p>
+      <button class="edit-name-link" id="edit-name-link">Edit name</button>
     </div>
 
     <div class="tabs" id="tabs" role="tablist"></div>
@@ -249,6 +252,17 @@ html{background-color:#F4F6F3;}
       <p>NYANSA · © 2026 S CHAMBERS</p>
       <a href="#" id="about-link">About Nyansa</a>
     </div>
+  </div>
+</div>
+
+<div id="name-screen" class="about-screen" style="display:none;">
+  <div class="auth-box" style="max-width:360px;">
+    <h1 id="nameScreenTitle">Welcome to Nyansa</h1>
+    <p class="tagline">Wisdom through reflection.</p>
+    <p style="margin-top:1rem;">What would you like your journal to be called? You can change this any time.</p>
+    <input type="text" id="name-input" placeholder="Your preferred name" autocomplete="given-name">
+    <button class="primary" id="name-save" style="width:100%;">Continue</button>
+    <button class="ghost" id="name-skip" style="width:100%;margin-top:6px;">Skip — use "My Nyansa Journal"</button>
   </div>
 </div>
 
@@ -397,6 +411,13 @@ async function sendMagicLink(){
 async function showApp(user){
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
+
+  const hasName = await loadPreferredName();
+  if(!hasName){
+    document.getElementById('name-screen').style.display = 'flex';
+    document.getElementById('name-input').focus();
+    return;
+  }
   document.getElementById('app-root').style.display = 'block';
   await init();
 }
@@ -404,8 +425,66 @@ async function showApp(user){
 function showAuthScreen(){
   currentUser = null;
   document.getElementById('app-root').style.display = 'none';
+  document.getElementById('name-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
 }
+
+let preferredName = '';
+
+function applyJournalTitle(){
+  const title = preferredName ? `${preferredName}'s Nyansa Journal` : 'My Nyansa Journal';
+  const el = document.getElementById('journalTitle');
+  if(el) el.textContent = title;
+}
+
+// Returns true if a name is already known (from account metadata or stored profile data).
+// If not, leaves preferredName empty so the caller can prompt for it.
+async function loadPreferredName(){
+  // Future-proofing: if the user's account/profile ever supplies a real name
+  // (e.g. via an OAuth provider), use it automatically without prompting.
+  const metaName = currentUser?.user_metadata?.full_name || currentUser?.user_metadata?.name || '';
+  if(metaName){
+    preferredName = metaName;
+    applyJournalTitle();
+    return true;
+  }
+  const stored = await sget('profile:name', null);
+  if(stored !== null){
+    preferredName = stored;
+    applyJournalTitle();
+    return true;
+  }
+  return false;
+}
+
+async function saveName(name){
+  preferredName = (name || '').trim();
+  await sset('profile:name', preferredName);
+  applyJournalTitle();
+}
+
+document.getElementById('name-save').onclick = async ()=>{
+  const val = document.getElementById('name-input').value.trim();
+  await saveName(val);
+  document.getElementById('name-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  await init();
+};
+document.getElementById('name-skip').onclick = async ()=>{
+  await saveName('');
+  document.getElementById('name-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  await init();
+};
+document.getElementById('name-input').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('name-save').click();
+});
+document.getElementById('edit-name-link').onclick = ()=>{
+  document.getElementById('name-input').value = preferredName;
+  document.getElementById('nameScreenTitle').textContent = 'Edit your name';
+  document.getElementById('name-screen').style.display = 'flex';
+  document.getElementById('name-input').focus();
+};
 
 document.getElementById('auth-send').onclick = sendMagicLink;
 document.getElementById('auth-email').addEventListener('keydown', (e)=>{
