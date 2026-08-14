@@ -5,28 +5,32 @@
 <title>Journal Hub</title>
 <style>
   :root{
-    --bg:#faf8f4; --surface:#ffffff; --border:#e5e0d8; --border-soft:#efece5;
-    --text:#2c2a26; --text2:#6b6558; --text3:#a39d8e;
-    --accent:#7f6a4f; --accent-soft:#efe6d8; --accent-text:#5c4a33;
-    --green:#5c7a5c; --green-soft:#e7edcf;
+    --bg:#FFF9F4; --surface:#ffffff; --border:#ecdfd8; --border-soft:#f5ece6;
+    --text:#3D2635; --text2:#6b5560; --text3:#a3919a;
+    --accent:#C9828B; --accent-soft:#f3e2e4; --accent-text:#9c5560;
+    --green:#8fa38a; --green-soft:#e8ede6;
     --coral:#c1704f; --coral-soft:#f6e5db;
+    --gold:#D9B56D; --gold-soft:#f6ecd9;
+    --sage:#B8C8B5; --sage-soft:#eef2ed;
+    --plum:#3D2635;
     --radius:14px; --radius-sm:9px;
     --serif: Georgia, 'Times New Roman', serif;
     --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --bg:#1c1a17; --surface:#252220; --border:#3a352e; --border-soft:#2e2b26;
-      --text:#ece7dc; --text2:#a39d8e; --text3:#756f61;
-      --accent:#c7ab7f; --accent-soft:#3a3226; --accent-text:#e0c99a;
-      --green:#8fae8a; --coral:#d98d6a; --coral-soft:#3a2a20;
+      --bg:#241a20; --surface:#2e2127; --border:#4a3640; --border-soft:#3a2b32;
+      --text:#f3e6ea; --text2:#c9a8b4; --text3:#8f7079;
+      --accent:#dda3aa; --accent-soft:#4a2f36; --accent-text:#eec3c9;
+      --green:#a3b89e; --coral:#d98d6a; --coral-soft:#3a2a20;
+      --gold:#e0c078; --gold-soft:#3a3020; --sage:#9fb399; --sage-soft:#2c342a;
     }
   }
   *{box-sizing:border-box;}
-html{background-color:#F4F6F3;}
+html{background-color:#FFF9F4;}
   body{
     margin:0;font-family:var(--sans);color:var(--text);
-    background-color:#F4F6F3;
+    background-color:#FFF9F4;
     position:relative;
   }
   body::before, body::after{
@@ -38,11 +42,11 @@ html{background-color:#F4F6F3;}
   }
   body::before{
     top:0; left:0;
-    background:radial-gradient(ellipse at top left, rgba(143,161,147,0.15), rgba(143,161,147,0.06) 55%, transparent 75%);
+    background:radial-gradient(ellipse at top left, rgba(184,200,181,0.22), rgba(184,200,181,0.08) 55%, transparent 75%);
   }
   body::after{
     bottom:0; right:0;
-    background:radial-gradient(ellipse at bottom right, rgba(91,110,96,0.14), rgba(91,110,96,0.05) 55%, transparent 75%);
+    background:radial-gradient(ellipse at bottom right, rgba(184,200,181,0.20), rgba(184,200,181,0.07) 55%, transparent 75%);
   }
   .wrap{position:relative;}
   .corner-knot{
@@ -119,11 +123,19 @@ html{background-color:#F4F6F3;}
     }
     .tab:hover{background:var(--border-soft);}
     .tab.active{
-      background:#E3EAE4;color:#5B6E60;
+      background:var(--accent-soft);color:var(--accent-text);
       border:none;font-weight:500;
     }
     .tab i{margin-right:8px;font-size:14px;vertical-align:-2px;}
     #panels{min-width:0;}
+
+    /* Shift the corner motif to align with the sidebar nav rather than the title,
+       now that the nav has moved from a horizontal row to a left-hand rail. */
+    .corner-knot{
+      top:auto;
+      left:-42px;
+      bottom:calc(100% - 210px);
+    }
   }
 
   .panel{display:none;}
@@ -187,11 +199,29 @@ html{background-color:#F4F6F3;}
   .mood-btn{flex:1;text-align:center;padding:8px 4px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:var(--bg);cursor:pointer;font-size:20px;}
   .mood-btn.sel{background:var(--accent-soft);border-color:var(--accent);}
 
-  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:.5rem;}
-  .cal .d{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--bg);color:var(--text3);cursor:pointer;border:0.5px solid transparent;}
+  /* Compact calendar: date navigator + mood overview, not the page's dominant feature */
+  .cal-nav-card{max-width:360px;}
+  .cal-nav-head{margin-bottom:.4rem;}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:.4rem;max-width:320px;}
+  .cal .d{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--bg);color:var(--text3);cursor:pointer;border:0.5px solid transparent;}
   .cal .d.has{background:var(--accent-soft);color:var(--accent-text);font-weight:500;}
   .cal .d.today{border-color:var(--accent);}
   .cal .d.selected{outline:2px solid var(--accent);outline-offset:1px;}
+  .cal .dow{font-size:10px;color:var(--text3);text-align:center;}
+  .cal-mood-row{margin-top:.9rem;padding-top:.8rem;border-top:0.5px solid var(--border-soft);}
+  .cal-mood-label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:.5rem;}
+
+  /* Reflection writing area: the primary interaction on this page */
+  .reflection-card{padding:1.4rem 1.5rem;}
+  .reflection-textarea{
+    width:100%;min-height:340px;
+    font-family:var(--serif);font-size:16px;line-height:1.7;
+    padding:1rem 1.1rem;
+    border:0.5px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--bg);color:var(--text);
+    resize:vertical;outline:none;
+  }
+  .reflection-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);}
 
   .archive-item{padding:12px 0;border-bottom:0.5px solid var(--border-soft);cursor:pointer;}
   .archive-item:last-child{border-bottom:none;}
@@ -199,7 +229,6 @@ html{background-color:#F4F6F3;}
   .archive-date{font-size:13px;font-weight:500;margin-bottom:2px;}
   .archive-preview{font-size:13px;color:var(--text2);line-height:1.5;font-family:var(--serif);}
   .archive-empty{font-style:italic;color:var(--text3);}
-  .cal .dow{font-size:11px;color:var(--text3);text-align:center;}
 
   .pillar-card{background:var(--bg);border-radius:var(--radius-sm);padding:.9rem;margin-bottom:.7rem;position:relative;}
   .pillar-card .del{position:absolute;top:8px;right:8px;color:var(--text3);cursor:pointer;font-size:15px;}
@@ -300,7 +329,7 @@ html{background-color:#F4F6F3;}
     </div>
 
     <button class="mobile-nav-toggle" id="mobile-nav-toggle" aria-expanded="false" aria-controls="tabs">
-      <span id="mobile-nav-label">Daily rituals</span>
+      <span id="mobile-nav-label">Today</span>
       <span aria-hidden="true">&#9776;</span>
     </button>
 
@@ -364,8 +393,8 @@ let currentUser = null;
 
 <script>
 const TABS = [
-  {id:'daily', label:'Daily rituals', icon:'ti-sun'},
-  {id:'monthly', label:'Monthly', icon:'ti-calendar'},
+  {id:'daily', label:'Today', icon:'ti-sun'},
+  {id:'monthly', label:'Reflections', icon:'ti-calendar'},
   {id:'archive', label:'Archive', icon:'ti-list'},
   {id:'vision', label:'Vision board', icon:'ti-compass'},
   {id:'finance', label:'Finances', icon:'ti-coin'},
@@ -732,25 +761,26 @@ async function renderMonthly(){
   }
 
   p.innerHTML = `
-    <div class="card">
-      <h2>Mood — ${isToday ? 'today' : formatDateLabel(viewDate)}</h2>
-      <p class="sub">${isToday ? new Date().toLocaleDateString(undefined,{weekday:'long'}) : 'Tap a day in the calendar below to view or edit it'}</p>
-      <div class="mood-row" id="mood-row">
-        ${MOODS.map((em,i)=>`<div class="mood-btn ${moodMap[viewDate]===i+1?'sel':''}" data-v="${i+1}">${em}</div>`).join('')}
+    <div class="card cal-nav-card">
+      <div class="cal-nav-head">
+        <h2>${monthName}</h2>
+        <p class="sub">Choose a day, then set your mood and reflect</p>
       </div>
-    </div>
-    <div class="card">
-      <h2>${monthName}</h2>
-      <p class="sub">Your mood, day by day — tap a day to view or edit it</p>
       <div class="cal">
         <div class="dow">S</div><div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div>
         ${calDays}
       </div>
+      <div class="cal-mood-row">
+        <span class="cal-mood-label">${isToday ? 'Mood today' : 'Mood — ' + formatDateLabel(viewDate)}</span>
+        <div class="mood-row" id="mood-row">
+          ${MOODS.map((em,i)=>`<div class="mood-btn ${moodMap[viewDate]===i+1?'sel':''}" data-v="${i+1}">${em}</div>`).join('')}
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <h2>Journal — ${isToday ? 'today' : formatDateLabel(viewDate)}</h2>
+    <div class="card reflection-card">
+      <h2>${isToday ? "Today's reflection" : formatDateLabel(viewDate)}</h2>
       ${!isToday ? `<div class="btn-row" style="margin:0 0 .7rem;"><button class="today-btn" id="m-today">Back to today</button></div>` : ''}
-      <textarea id="m-journal" style="min-height:110px;" placeholder="What's on your mind...">${esc(journalView)}</textarea>
+      <textarea id="m-journal" class="reflection-textarea" placeholder="What's on your mind...">${esc(journalView)}</textarea>
       <div class="btn-row"><button class="primary small" id="m-journal-save">Save entry</button></div>
     </div>
     <div class="card">
